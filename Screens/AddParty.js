@@ -1,13 +1,16 @@
 import React, {useState, useCallback, useContext} from 'react';
-import {Button, Text, TextInput} from 'react-native-paper';
-import {TouchableOpacity} from 'react-native';
+import {ActivityIndicator, Button, Text, TextInput} from 'react-native-paper';
+import {TouchableOpacity, ToastAndroid} from 'react-native';
 import ModelLayout from '../src/Layouts/ModelLayout';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {useFocusEffect} from '@react-navigation/native';
 import {GlobalState} from '../Navigation';
+import {ADD_Party} from '../src/controllers/Party';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function AddParty({id, navigation, route}) {
-  const {type} = route.params;
+export default function AddParty({navigation, route}) {
+  const {type, id} = route.params;
+  const [isLoading, setisLoading] = useState(false);
   const [inputDatas, setinputDatas] = useState({
     partyname: '',
     phone: '',
@@ -18,7 +21,34 @@ export default function AddParty({id, navigation, route}) {
     setinputDatas(prev => ({...prev, [name]: value}));
   };
   const handleSubmit = () => {
-    console.log(inputDatas);
+    setisLoading(true);
+    AsyncStorage.getItem('ACC-Book_userData').then(data => {
+      const catchData = data ? JSON.parse(data) : false;
+      if (
+        catchData &&
+        inputDatas.partyname !== '' &&
+        inputDatas.type !== '' &&
+        inputDatas.staticsID !== ''
+      ) {
+        ADD_Party({
+          userid: catchData._id,
+          token: catchData.accessToken,
+          data: inputDatas,
+        }).then(res => {
+          if (res?.status == 'ok') {
+            setisLoading(false);
+            ToastAndroid.show(res?.message, ToastAndroid.SHORT);
+            navigation.goBack();
+          } else {
+            setisLoading(false);
+            ToastAndroid.show('Something went wrong', ToastAndroid.SHORT);
+          }
+        });
+      } else {
+        setisLoading(false);
+        ToastAndroid.show('Mandatory fields are missed', ToastAndroid.SHORT);
+      }
+    });
   };
   useFocusEffect(useCallback(() => {}, []));
   return (
@@ -53,7 +83,7 @@ export default function AddParty({id, navigation, route}) {
         contentStyle={{color: 'white'}}
       />
       <TouchableOpacity
-        onPress={handleSubmit}
+        onPress={isLoading ? undefined : handleSubmit}
         // icon={() => <Icon name="person-add" color={'black'} size={23} />}
         style={{
           position: 'absolute',
@@ -67,9 +97,13 @@ export default function AddParty({id, navigation, route}) {
           borderWidth: 2,
           padding: 10,
         }}>
-        <Text style={{fontWeight: 'bold', fontSize: 16, color: '#6DCCDD'}}>
-          {`ADD ${type ? type : 'CUSTOMER'}`}{' '}
-        </Text>
+        {isLoading ? (
+          <ActivityIndicator animating={true} color="#6DCCDD" />
+        ) : (
+          <Text style={{fontWeight: 'bold', fontSize: 16, color: '#6DCCDD'}}>
+            {`ADD ${type ? type : 'CUSTOMER'}`}{' '}
+          </Text>
+        )}
       </TouchableOpacity>
     </ModelLayout>
   );

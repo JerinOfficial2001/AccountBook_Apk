@@ -6,11 +6,13 @@ import {Text} from 'react-native-paper';
 export default function AuthLayout({children}) {
   const styles = StyleSheet.create({
     container: {
+      flex: 1,
+      backgroundColor: '#262626',
       alignItems: 'center',
       gap: 10,
-      backgroundColor: '#262626',
-      height: '100%',
       position: 'relative',
+      justifyContent: 'center',
+      flexDirection: 'column',
     },
   });
   return <View style={styles.container}>{children}</View>;

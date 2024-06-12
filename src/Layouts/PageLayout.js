@@ -2,6 +2,7 @@ import React from 'react';
 import {View, StyleSheet, Image, TouchableOpacity} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {Text} from 'react-native-paper';
+import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 export default function PageLayout({
@@ -10,6 +11,7 @@ export default function PageLayout({
   data,
   navigation,
   type,
+  isLoading,
 }) {
   const styles = StyleSheet.create({
     container: {
@@ -17,7 +19,6 @@ export default function PageLayout({
       backgroundColor: '#262626',
       height: '100%',
       position: 'relative',
-      gap: 10,
     },
   });
   return (
@@ -29,6 +30,8 @@ export default function PageLayout({
           alignItems: 'center',
           justifyContent: 'center',
           padding: 8,
+          borderBottomColor: '#1A0B0BBF',
+          borderBottomWidth: 1,
         }}>
         {isCollection && (
           <View
@@ -64,74 +67,98 @@ export default function PageLayout({
             <View style={{alignItems: 'flex-start', justifyContent: 'center'}}>
               <Text
                 style={{color: '#BABABA', fontSize: 16, fontWeight: 'bold'}}>
-                Name
+                {data?.name}
               </Text>
               <TouchableOpacity
-                onPress={() => navigation.navigate('CustomerProfile', {type})}>
+                onPress={() =>
+                  navigation.navigate('PartyProfile', {type, data: data?.data})
+                }>
                 <Text style={{color: '#7F7F7F'}}>View setting</Text>
               </TouchableOpacity>
             </View>
           </View>
         )}
-        <LinearGradient
-          colors={['rgba(0, 0, 0, 0.38)', 'rgba(102, 102, 102, 0.38)']}
-          start={{x: 0, y: 0}}
-          end={{x: 1, y: 0}}
-          style={{
-            width: '98%',
-            height: isCollection ? 70 : 90,
-            borderRadius: isCollection ? 15 : 20,
-            flexDirection: 'row',
-            alignItems: 'center',
-          }}>
-          {(!isCollection || data?.credit) && (
-            <View
-              style={{
-                flex: 1,
-                justifyContent: isCollection ? 'space-around' : 'center',
-                alignItems: 'center',
-                width: isCollection ? '100%' : '49%',
-                flexDirection: isCollection ? 'row' : 'column',
-              }}>
-              <Text
+        {(!isCollection ||
+          data?.expenseType == 'CREDIT' ||
+          data?.expenseType == 'DEBIT') && (
+          <LinearGradient
+            colors={['rgba(0, 0, 0, 0.38)', 'rgba(102, 102, 102, 0.38)']}
+            start={{x: 0, y: 0}}
+            end={{x: 1, y: 0}}
+            style={{
+              width: '98%',
+              height: isCollection ? 70 : 90,
+              borderRadius: isCollection ? 15 : 20,
+              flexDirection: 'row',
+              alignItems: 'center',
+            }}>
+            {(!isCollection || data?.expenseType == 'CREDIT') && (
+              <View
                 style={{
-                  color: '#BABABA',
+                  flex: 1,
+                  justifyContent: isCollection ? 'space-around' : 'center',
+                  alignItems: 'center',
+                  width: isCollection ? '100%' : '49%',
+                  flexDirection: isCollection ? 'row' : 'column',
                 }}>
-                You will give
-              </Text>
-              <Text
-                style={{color: '#41EA66', fontWeight: 'bold', fontSize: 20}}>
-                ₹25,000
-              </Text>
-            </View>
-          )}
-          {!isCollection && (
-            <View
-              style={{
-                backgroundColor: '#5F5F5F',
-                height: '80%',
-                width: 3,
-                borderRadius: 10,
-              }}
-            />
-          )}
-          {(!isCollection || data?.debit) && (
-            <View
-              style={{
-                flex: 1,
-                justifyContent: isCollection ? 'space-around' : 'center',
-                alignItems: 'center',
-                width: isCollection ? '100%' : '49%',
-                flexDirection: isCollection ? 'row' : 'column',
-              }}>
-              <Text style={{color: '#BABABA'}}>You will gave</Text>
-              <Text
-                style={{color: '#EA5F41', fontWeight: 'bold', fontSize: 20}}>
-                ₹25,000
-              </Text>
-            </View>
-          )}
-        </LinearGradient>
+                <Text
+                  style={{
+                    color: '#BABABA',
+                  }}>
+                  You will give
+                </Text>
+                {isLoading ? (
+                  <SkeletonPlaceholder
+                    backgroundColor="red"
+                    highlightColor="#64646469">
+                    <View
+                      style={{
+                        width: '80%',
+                        height: 30,
+                        borderRadius: 10,
+                      }}
+                    />
+                  </SkeletonPlaceholder>
+                ) : (
+                  <Text
+                    style={{
+                      color: '#41EA66',
+                      fontWeight: 'bold',
+                      fontSize: 20,
+                    }}>
+                    ₹ {data?.totalcredit || data?.amount}
+                  </Text>
+                )}
+              </View>
+            )}
+            {!isCollection && (
+              <View
+                style={{
+                  backgroundColor: '#5F5F5F',
+                  height: '80%',
+                  width: 3,
+                  borderRadius: 10,
+                }}
+              />
+            )}
+            {(!isCollection || data?.expenseType == 'DEBIT') && (
+              <View
+                style={{
+                  flex: 1,
+                  justifyContent: isCollection ? 'space-around' : 'center',
+                  alignItems: 'center',
+                  width: isCollection ? '100%' : '49%',
+                  flexDirection: isCollection ? 'row' : 'column',
+                }}>
+                <Text style={{color: '#BABABA'}}>You will gave</Text>
+                <Text
+                  style={{color: '#EA5F41', fontWeight: 'bold', fontSize: 20}}>
+                  ₹ {data?.totaldebit || data?.amount}
+                </Text>
+              </View>
+            )}
+          </LinearGradient>
+        )}
       </View>
       {children}
     </View>

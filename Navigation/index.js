@@ -11,8 +11,8 @@ import Collections from '../Screens/Collections';
 import Entries from '../Screens/Entries';
 import Home from '../Screens/Home';
 import EntryDetails from '../Screens/EntryDetails';
-import CustomerProfile from '../Screens/CustomerProfile';
 import UpdateParty from '../Screens/UpdateParty';
+import PartyProfile from '../Screens/PartyProfile';
 
 export const GlobalState = createContext();
 
@@ -21,6 +21,7 @@ export default function Navigator() {
   const [expenseType, setexpenseType] = useState('');
   const [type, settype] = useState('CUSTOMER');
   const [partyHeaderTitle, setpartyHeaderTitle] = useState('');
+  const [entryName, setEntryName] = useState('Add Entry');
   return (
     <GlobalState.Provider
       value={{
@@ -30,6 +31,8 @@ export default function Navigator() {
         settype,
         partyHeaderTitle,
         setpartyHeaderTitle,
+        entryName,
+        setEntryName,
       }}>
       <NavigationContainer>
         <Stack.Navigator
@@ -57,16 +60,15 @@ export default function Navigator() {
             options={{
               headerShown: false,
             }}
-            component={Home}
-            name="Home"
+            component={Auth}
+            name="Auth"
           />
-
           <Stack.Screen
             options={{
               headerShown: false,
             }}
-            component={Auth}
-            name="Auth"
+            component={Home}
+            name="Home"
           />
           <Stack.Screen
             component={BottomNav}
@@ -95,7 +97,7 @@ export default function Navigator() {
             name="Entries"
             options={{
               // headerShown: false,
-              title: 'Add Entry',
+              title: entryName,
               headerTitleStyle: {
                 color: expenseType == 'DEBIT' ? '#C03C3C' : '#137511',
               },
@@ -111,8 +113,8 @@ export default function Navigator() {
             }}
           />
           <Stack.Screen
-            component={CustomerProfile}
-            name="CustomerProfile"
+            component={PartyProfile}
+            name="PartyProfile"
             options={{
               // headerShown: false,
               title:

@@ -1,11 +1,38 @@
-import React from 'react';
+import React, {useCallback, useContext} from 'react';
 import ModelLayout from '../src/Layouts/ModelLayout';
-import {View, TouchableOpacity, Image} from 'react-native';
+import {View, TouchableOpacity, Image, ToastAndroid} from 'react-native';
 import {Button, Text} from 'react-native-paper';
 import Divider from '../src/components/Divider';
+import {useFocusEffect} from '@react-navigation/native';
+import {DELETE_Collection} from '../src/controllers/Collections';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {GlobalState} from '../Navigation';
 
 export default function EntryDetails({navigation, route}) {
   const {data} = route.params;
+  const {setEntryName} = useContext(GlobalState);
+  const DeleteHandler = () => {
+    AsyncStorage.getItem('ACC-Book_userData').then(cookie => {
+      const catchData = cookie ? JSON.parse(cookie) : false;
+      if (catchData && data?._id) {
+        DELETE_Collection({
+          id: data?._id,
+          partyID: data?.partyID,
+          userid: catchData._id,
+          token: catchData.accessToken,
+        }).then(res => {
+          if (res?.status == 'ok') {
+            navigation.goBack();
+            ToastAndroid.show(res?.message, ToastAndroid.SHORT);
+          } else {
+            ToastAndroid.show('Failed', ToastAndroid.SHORT);
+          }
+        });
+      } else {
+        ToastAndroid.show('Something went wrong', ToastAndroid.SHORT);
+      }
+    });
+  };
   return (
     <ModelLayout>
       <View
@@ -60,10 +87,10 @@ export default function EntryDetails({navigation, route}) {
                 style={{alignItems: 'flex-start', justifyContent: 'center'}}>
                 <Text
                   style={{color: '#BABABA', fontSize: 16, fontWeight: 'bold'}}>
-                  Name
+                  {data?.name}
                 </Text>
 
-                <Text style={{color: '#7F7F7F'}}>Date</Text>
+                <Text style={{color: '#7F7F7F'}}>{data?.date}</Text>
               </View>
             </View>
             <View
@@ -73,14 +100,18 @@ export default function EntryDetails({navigation, route}) {
                 flexDirection: 'column',
               }}>
               <Text
-                style={{color: '#41EA66', fontWeight: 'bold', fontSize: 20}}>
-                ₹25,000
+                style={{
+                  color: data?.expensetype == 'CREDIT' ? '#41EA66' : '#EA5F41',
+                  fontWeight: 'bold',
+                  fontSize: 20,
+                }}>
+                ₹ {data?.amount}
               </Text>
               <Text
                 style={{
                   color: '#BABABA',
                 }}>
-                You got
+                {data?.expensetype == 'CREDIT' ? 'You got' : 'You gave'}
               </Text>
             </View>
           </View>
@@ -97,8 +128,8 @@ export default function EntryDetails({navigation, route}) {
             <Text style={{color: '#BABABA', fontSize: 16, fontWeight: 'bold'}}>
               Running Balance
             </Text>
-            <Text style={{color: '#41EA66', fontWeight: 'bold', fontSize: 18}}>
-              ₹25,000
+            <Text style={{color: 'gray', fontWeight: 'bold', fontSize: 18}}>
+              -
             </Text>
           </View>
           <Divider mode="horizontal" />
@@ -112,9 +143,12 @@ export default function EntryDetails({navigation, route}) {
               justifyContent: 'center',
             }}>
             <TouchableOpacity
-              onPress={() =>
-                navigation.navigate('Entries', {expenseType: data?.expenseType})
-              }>
+              onPress={() => {
+                navigation.navigate('Entries', {
+                  data: data,
+                });
+                setEntryName('Edit Entry');
+              }}>
               <Text style={{color: 'white', fontWeight: 'bold'}}>
                 EDIT ENTRY
               </Text>
@@ -136,7 +170,7 @@ export default function EntryDetails({navigation, route}) {
           bottom: 0,
         }}>
         <TouchableOpacity
-          // onPress={handleSubmit}
+          onPress={DeleteHandler}
           // icon={() => <Icon name="person-add" color={'black'} size={23} />}
           style={{
             alignItems: 'center',

@@ -1,15 +1,18 @@
-import React, {useContext} from 'react';
-import {Text} from 'react-native-paper';
-import {View, Image, TouchableOpacity} from 'react-native';
+import React, {useContext, useState} from 'react';
+import {ActivityIndicator, Text} from 'react-native-paper';
+import {View, Image, TouchableOpacity, ToastAndroid} from 'react-native';
 import ModelLayout from '../src/Layouts/ModelLayout';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Icon1 from 'react-native-vector-icons/FontAwesome5';
 import Icon2 from 'react-native-vector-icons/MaterialCommunityIcons';
 import {GlobalState} from '../Navigation';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {DELETE_Party} from '../src/controllers/Party';
 
-export default function CustomerProfile({navigation, route}) {
+export default function PartyProfile({navigation, route}) {
   const {partyHeaderTitle, setpartyHeaderTitle} = useContext(GlobalState);
-  const {type} = route.params;
+  const [isLoading, setisLoading] = useState(false);
+  const {type, data} = route.params;
   const UserCard = ({onClick, data, icon, iconType}) => {
     return (
       <View
@@ -55,6 +58,31 @@ export default function CustomerProfile({navigation, route}) {
       </View>
     );
   };
+  const DeleteHandler = () => {
+    setisLoading(true);
+    AsyncStorage.getItem('ACC-Book_userData').then(cookie => {
+      const catchData = cookie ? JSON.parse(cookie) : false;
+      if (catchData && data?._id) {
+        DELETE_Party({
+          id: data?._id,
+          userid: catchData._id,
+          token: catchData.accessToken,
+        }).then(res => {
+          if (res?.status == 'ok') {
+            setisLoading(false);
+            navigation.navigate('Home');
+            ToastAndroid.show(res?.message, ToastAndroid.SHORT);
+          } else {
+            setisLoading(false);
+            ToastAndroid.show('Failed', ToastAndroid.SHORT);
+          }
+        });
+      } else {
+        setisLoading(false);
+        ToastAndroid.show('Something went wrong', ToastAndroid.SHORT);
+      }
+    });
+  };
   return (
     <ModelLayout>
       <View
@@ -95,22 +123,30 @@ export default function CustomerProfile({navigation, route}) {
         </View>
       </View>
       <UserCard
-        data={{value: 'Jerin', lable: 'Name'}}
+        data={{value: data?.partyname, lable: 'Name'}}
         icon="user-alt"
         iconType={1}
         onClick={() => {
-          navigation.navigate('UpdateParty', {title: 'name'}),
+          navigation.navigate('UpdateParty', {
+            title: 'name',
+            value: data?.partyname,
+            data: data,
+          }),
             setpartyHeaderTitle(
               type == 'CUSTOMER' ? 'Customer Name' : 'Supplier Name',
             );
         }}
       />
       <UserCard
-        data={{value: '9384912517', lable: 'Mobile Number'}}
+        data={{value: data?.phone ? data?.phone : '-', lable: 'Mobile Number'}}
         icon="call"
         iconType={0}
         onClick={() => {
-          navigation.navigate('UpdateParty', {title: 'phone'}),
+          navigation.navigate('UpdateParty', {
+            title: 'phone',
+            value: data.phone,
+            data: data,
+          }),
             setpartyHeaderTitle(
               type == 'CUSTOMER'
                 ? 'Customer Mobile Number'
@@ -128,7 +164,7 @@ export default function CustomerProfile({navigation, route}) {
         // onClick={() => navigation.navigate('UpdateParty', {title: 'type'})}
       />
       <TouchableOpacity
-        // onPress={handleSubmit}
+        onPress={isLoading ? undefined : DeleteHandler}
         // icon={() => <Icon name="person-add" color={'black'} size={23} />}
         style={{
           position: 'absolute',
@@ -142,9 +178,13 @@ export default function CustomerProfile({navigation, route}) {
           borderWidth: 2,
           padding: 10,
         }}>
-        <Text style={{fontWeight: 'bold', fontSize: 16, color: '#C03C3C'}}>
-          {`DELETE ${type ? type : 'CUSTOMER'}`}
-        </Text>
+        {!isLoading ? (
+          <Text style={{fontWeight: 'bold', fontSize: 16, color: '#C03C3C'}}>
+            {`DELETE ${type ? type : 'CUSTOMER'}`}
+          </Text>
+        ) : (
+          <ActivityIndicator animating={true} color="#C03C3C" />
+        )}
       </TouchableOpacity>
     </ModelLayout>
   );

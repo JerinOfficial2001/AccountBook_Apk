@@ -1,19 +1,26 @@
 import React, {useContext, useCallback, useState} from 'react';
 import ModelLayout from '../src/Layouts/ModelLayout';
-import {Text, TextInput} from 'react-native-paper';
-import {TouchableOpacity} from 'react-native';
+import {ActivityIndicator, Text, TextInput} from 'react-native-paper';
+import {TouchableOpacity, ToastAndroid} from 'react-native';
 import {GlobalState} from '../Navigation';
 import {useFocusEffect} from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {ADD_Party} from '../src/controllers/Party';
+import {
+  ADD_Collection,
+  UPDATE_Collection,
+} from '../src/controllers/Collections';
 
-export default function Entries({route}) {
-  const {setexpenseType, id} = useContext(GlobalState);
-  const {expenseType} = route.params;
+export default function Entries({route, navigation}) {
+  const {setexpenseType, entryName} = useContext(GlobalState);
+  const {data, collectionRouteData} = route.params;
+  const [isLoading, setisLoading] = useState(false);
   const [inputDatas, setinputDatas] = useState({
-    partyID: id ? id : '',
-    expensetype: expenseType ? expenseType : '',
-    amount: '',
-    date: '',
-    details: '',
+    partyID: data?.id ? data?.id : data?.partyID ? data?.partyID : '',
+    expensetype: data?.expensetype ? data?.expensetype : '',
+    amount: data?.amount ? data?.amount : '',
+    date: data?.date ? data?.date : '',
+    details: data?.details ? data?.details : '',
   });
   useFocusEffect(
     useCallback(() => {
@@ -24,13 +31,63 @@ export default function Entries({route}) {
     setinputDatas(prev => ({...prev, [name]: value}));
   };
   const handleSubmit = () => {
-    console.log(inputDatas);
+    setisLoading(true);
+    AsyncStorage.getItem('ACC-Book_userData').then(cookie => {
+      const catchData = cookie ? JSON.parse(cookie) : false;
+      if (
+        catchData &&
+        inputDatas.partyID !== '' &&
+        inputDatas.expensetype !== '' &&
+        inputDatas.date !== '' &&
+        inputDatas.amount !== ''
+      ) {
+        if (entryName == 'Edit Entry') {
+          data?._id
+            ? UPDATE_Collection({
+                userid: catchData._id,
+                token: catchData.accessToken,
+                data: inputDatas,
+                id: data?._id,
+              }).then(res => {
+                if (res?.status == 'ok') {
+                  setisLoading(false);
+                  ToastAndroid.show(res?.message, ToastAndroid.SHORT);
+                  navigation.navigate('Collections', {
+                    type: collectionRouteData?.type,
+                    id: collectionRouteData?.id,
+                    name: collectionRouteData?.name,
+                  });
+                } else {
+                  setisLoading(false);
+                }
+              })
+            : ToastAndroid.show('Collection ID not found', ToastAndroid.SHORT);
+        } else {
+          ADD_Collection({
+            userid: catchData._id,
+            token: catchData.accessToken,
+            data: inputDatas,
+          }).then(res => {
+            if (res?.status == 'ok') {
+              setisLoading(false);
+              ToastAndroid.show(res?.message, ToastAndroid.SHORT);
+              navigation.goBack();
+            } else {
+              setisLoading(false);
+            }
+          });
+        }
+      } else {
+        setisLoading(false);
+        ToastAndroid.show('Mandatory fields are missed', ToastAndroid.SHORT);
+      }
+    });
   };
   return (
     <ModelLayout>
       <TextInput
         label="Amount"
-        value={inputDatas.partyname}
+        value={inputDatas.amount}
         onChangeText={val => handleOnchange('amount', val)}
         mode="outlined"
         keyboardType="phone-pad"
@@ -49,7 +106,7 @@ export default function Entries({route}) {
         value={inputDatas.partyname}
         onChangeText={val => handleOnchange('details', val)}
         mode="outlined"
-        keyboardType="phone-pad"
+        keyboardType="email-address"
         style={{
           backgroundColor: 'transparent',
           width: '95%',
@@ -91,9 +148,13 @@ export default function Entries({route}) {
           backgroundColor: '#137511',
           borderColor: 'transparent',
         }}>
-        <Text style={{fontWeight: 'bold', fontSize: 16, color: 'white'}}>
-          SAVE
-        </Text>
+        {isLoading ? (
+          <ActivityIndicator animating={true} color="white" />
+        ) : (
+          <Text style={{fontWeight: 'bold', fontSize: 16, color: 'white'}}>
+            SAVE
+          </Text>
+        )}
       </TouchableOpacity>
     </ModelLayout>
   );

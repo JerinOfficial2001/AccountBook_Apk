@@ -37,60 +37,67 @@ export default function Home({navigation}) {
 
   return (
     <View style={{flex: 1, position: 'relative'}}>
-      <LinearGradient
-        colors={['rgba(0, 0, 0, 0.38)', 'rgba(102, 102, 102, 0.38)']}
-        start={{x: 0, y: 0}}
-        end={{x: 1, y: 0}}
+      <View
         style={{
-          width: '98%',
-          height: 90,
-          borderRadius: 20,
-          flexDirection: 'row',
-          alignItems: 'center',
           position: 'absolute',
           zIndex: 1,
-          top: 120,
-          left: 3,
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          width: '100%',
+          height: 220,
         }}>
-        <View
+        <LinearGradient
+          colors={['rgba(0, 0, 0, 0.38)', 'rgba(102, 102, 102, 0.38)']}
+          start={{x: 0, y: 0}}
+          end={{x: 1, y: 0}}
           style={{
-            flex: 1,
-            justifyContent: 'space-around',
+            width: '98%',
+            height: 90,
+            borderRadius: 20,
+            flexDirection: 'row',
             alignItems: 'center',
-            width: '100%',
-            flexDirection: 'column',
           }}>
-          <Text
+          <View
             style={{
-              color: '#BABABA',
+              flex: 1,
+              justifyContent: 'space-around',
+              alignItems: 'center',
+              width: '100%',
+              flexDirection: 'column',
             }}>
-            You will give
-          </Text>
+            <Text
+              style={{
+                color: '#BABABA',
+              }}>
+              You will give
+            </Text>
 
-          <Text
+            <Text
+              style={{
+                color: '#41EA66',
+                fontWeight: 'bold',
+                fontSize: 20,
+              }}>
+              ₹ {statistics?.totalcredit || statistics?.amount}
+            </Text>
+          </View>
+
+          <View
             style={{
-              color: '#41EA66',
-              fontWeight: 'bold',
-              fontSize: 20,
+              flex: 1,
+              justifyContent: 'space-around',
+              alignItems: 'center',
+              width: '100%',
+              flexDirection: 'column',
             }}>
-            ₹ {statistics?.totalcredit || statistics?.amount}
-          </Text>
-        </View>
+            <Text style={{color: '#BABABA'}}>You will gave</Text>
+            <Text style={{color: '#EA5F41', fontWeight: 'bold', fontSize: 20}}>
+              ₹ {statistics?.totaldebit || statistics?.amount}
+            </Text>
+          </View>
+        </LinearGradient>
+      </View>
 
-        <View
-          style={{
-            flex: 1,
-            justifyContent: 'space-around',
-            alignItems: 'center',
-            width: '100%',
-            flexDirection: 'column',
-          }}>
-          <Text style={{color: '#BABABA'}}>You will gave</Text>
-          <Text style={{color: '#EA5F41', fontWeight: 'bold', fontSize: 20}}>
-            ₹ {statistics?.totaldebit || statistics?.amount}
-          </Text>
-        </View>
-      </LinearGradient>
       <TabNavigation navigation={navigation} />
     </View>
   );

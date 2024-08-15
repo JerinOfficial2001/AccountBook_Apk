@@ -68,7 +68,7 @@ export default function TabNavigation({navigation}) {
       <Tab.Navigator
         screenOptions={{
           tabBarStyle: {
-            width: 250,
+            width: 266,
             backgroundColor: '#333232',
             elevation: 0,
           },
@@ -84,7 +84,7 @@ export default function TabNavigation({navigation}) {
             borderTopLeftRadius: 10,
             borderTopRightRadius: 10,
             alignItems: 'center',
-            marginLeft: 28,
+            marginLeft: 32,
             backgroundColor: '#6DCCDD',
           },
         }}>

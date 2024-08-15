@@ -44,7 +44,8 @@ export default function Home({navigation}) {
           alignItems: 'center',
           justifyContent: 'flex-end',
           width: '100%',
-          height: 220,
+          height: '25%',
+          pointerEvents: 'none',
         }}>
         <LinearGradient
           colors={['rgba(0, 0, 0, 0.38)', 'rgba(102, 102, 102, 0.38)']}

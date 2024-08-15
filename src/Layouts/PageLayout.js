@@ -78,28 +78,26 @@ export default function PageLayout({
             </View>
           </View>
         )}
-        {(!isCollection ||
-          data?.expenseType == 'CREDIT' ||
-          data?.expenseType == 'DEBIT') && (
+        {(data?.expenseType == 'CREDIT' || data?.expenseType == 'DEBIT') && (
           <LinearGradient
             colors={['rgba(0, 0, 0, 0.38)', 'rgba(102, 102, 102, 0.38)']}
             start={{x: 0, y: 0}}
             end={{x: 1, y: 0}}
             style={{
               width: '98%',
-              height: isCollection ? 70 : 90,
-              borderRadius: isCollection ? 15 : 20,
+              height: 70,
+              borderRadius: 15,
               flexDirection: 'row',
               alignItems: 'center',
             }}>
-            {(!isCollection || data?.expenseType == 'CREDIT') && (
+            {data?.expenseType == 'CREDIT' && (
               <View
                 style={{
                   flex: 1,
-                  justifyContent: isCollection ? 'space-around' : 'center',
+                  justifyContent: 'space-around',
                   alignItems: 'center',
-                  width: isCollection ? '100%' : '49%',
-                  flexDirection: isCollection ? 'row' : 'column',
+                  width: '100%',
+                  flexDirection: 'row',
                 }}>
                 <Text
                   style={{
@@ -126,39 +124,31 @@ export default function PageLayout({
                       fontWeight: 'bold',
                       fontSize: 20,
                     }}>
-                    ₹ {data?.totalcredit || data?.amount}
+                    ₹ {data?.amount}
                   </Text>
                 )}
               </View>
             )}
-            {!isCollection && (
-              <View
-                style={{
-                  backgroundColor: '#5F5F5F',
-                  height: '80%',
-                  width: 3,
-                  borderRadius: 10,
-                }}
-              />
-            )}
-            {(!isCollection || data?.expenseType == 'DEBIT') && (
+
+            {data?.expenseType == 'DEBIT' && (
               <View
                 style={{
                   flex: 1,
-                  justifyContent: isCollection ? 'space-around' : 'center',
+                  justifyContent: 'space-around',
                   alignItems: 'center',
-                  width: isCollection ? '100%' : '49%',
-                  flexDirection: isCollection ? 'row' : 'column',
+                  width: '100%',
+                  flexDirection: 'row',
                 }}>
                 <Text style={{color: '#BABABA'}}>You will gave</Text>
                 <Text
                   style={{color: '#EA5F41', fontWeight: 'bold', fontSize: 20}}>
-                  ₹ {data?.totaldebit || data?.amount}
+                  ₹ {data?.amount}
                 </Text>
               </View>
             )}
           </LinearGradient>
         )}
+        {!isCollection && <View style={{height: 100}}></View>}
       </View>
       {children}
     </View>

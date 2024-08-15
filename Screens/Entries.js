@@ -10,6 +10,7 @@ import {
   ADD_Collection,
   UPDATE_Collection,
 } from '../src/controllers/Collections';
+import {queryClient} from '../App';
 
 export default function Entries({route, navigation}) {
   const {setexpenseType, entryName} = useContext(GlobalState);
@@ -50,6 +51,11 @@ export default function Entries({route, navigation}) {
                 id: data?._id,
               }).then(res => {
                 if (res?.status == 'ok') {
+                  queryClient.invalidateQueries({queryKey: ['collections']});
+                  queryClient.invalidateQueries({queryKey: ['initParty']});
+                  queryClient.invalidateQueries({queryKey: ['statistics']});
+                  queryClient.invalidateQueries({queryKey: ['parties']});
+
                   setisLoading(false);
                   ToastAndroid.show(res?.message, ToastAndroid.SHORT);
                   navigation.navigate('Collections', {
@@ -69,6 +75,10 @@ export default function Entries({route, navigation}) {
             data: inputDatas,
           }).then(res => {
             if (res?.status == 'ok') {
+              queryClient.invalidateQueries({queryKey: ['collections']});
+              queryClient.invalidateQueries({queryKey: ['initParty']});
+              queryClient.invalidateQueries({queryKey: ['statistics']});
+              queryClient.invalidateQueries({queryKey: ['parties']});
               setisLoading(false);
               ToastAndroid.show(res?.message, ToastAndroid.SHORT);
               navigation.goBack();

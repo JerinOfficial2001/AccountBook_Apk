@@ -7,9 +7,10 @@ import {useFocusEffect} from '@react-navigation/native';
 import {DELETE_Collection} from '../src/controllers/Collections';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {GlobalState} from '../Navigation';
+import {queryClient} from '../App';
 
 export default function EntryDetails({navigation, route}) {
-  const {data} = route.params;
+  const {data, collectionRouteData} = route.params;
   const {setEntryName} = useContext(GlobalState);
   const DeleteHandler = () => {
     AsyncStorage.getItem('ACC-Book_userData').then(cookie => {
@@ -22,6 +23,8 @@ export default function EntryDetails({navigation, route}) {
           token: catchData.accessToken,
         }).then(res => {
           if (res?.status == 'ok') {
+            queryClient.invalidateQueries({queryKey: ['collections']});
+
             navigation.goBack();
             ToastAndroid.show(res?.message, ToastAndroid.SHORT);
           } else {
@@ -146,6 +149,7 @@ export default function EntryDetails({navigation, route}) {
               onPress={() => {
                 navigation.navigate('Entries', {
                   data: data,
+                  collectionRouteData,
                 });
                 setEntryName('Edit Entry');
               }}>

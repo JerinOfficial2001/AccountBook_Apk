@@ -8,6 +8,7 @@ import Icon2 from 'react-native-vector-icons/MaterialCommunityIcons';
 import {GlobalState} from '../Navigation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {DELETE_Party} from '../src/controllers/Party';
+import {queryClient} from '../App';
 
 export default function PartyProfile({navigation, route}) {
   const {partyHeaderTitle, setpartyHeaderTitle} = useContext(GlobalState);
@@ -69,6 +70,8 @@ export default function PartyProfile({navigation, route}) {
           token: catchData.accessToken,
         }).then(res => {
           if (res?.status == 'ok') {
+            queryClient.invalidateQueries({queryKey: ['statistics']});
+            queryClient.invalidateQueries({queryKey: ['parties']});
             setisLoading(false);
             navigation.navigate('Home');
             ToastAndroid.show(res?.message, ToastAndroid.SHORT);

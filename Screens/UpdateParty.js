@@ -5,6 +5,7 @@ import {ActivityIndicator, Text, TextInput} from 'react-native-paper';
 import {GlobalState} from '../Navigation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {UPDATE_Party} from '../src/controllers/Party';
+import {queryClient} from '../App';
 
 export default function UpdateParty({route, navigation}) {
   const {title, value, data} = route.params;
@@ -30,6 +31,8 @@ export default function UpdateParty({route, navigation}) {
           id: data?._id,
         }).then(res => {
           if (res?.status == 'ok') {
+            queryClient.invalidateQueries({queryKey: ['statistics']});
+            queryClient.invalidateQueries({queryKey: ['parties']});
             setisLoading(false);
             ToastAndroid.show(res?.message, ToastAndroid.SHORT);
             navigation.navigate('Home');

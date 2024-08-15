@@ -14,50 +14,27 @@ import {GET_Collection} from '../src/controllers/Collections';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import {GETINIT_Party} from '../src/controllers/Party';
 import {GlobalState} from '../Navigation';
+import {useQuery} from '@tanstack/react-query';
 
 export default function Collections({navigation, route}) {
   const {type, id, name} = route.params;
   const {setEntryName} = useContext(GlobalState);
 
-  const [userData, setuserData] = useState(null);
-  const [isLoading, setisLoading] = useState(true);
-  const [isPartyDataLoading, setisPartyDataLoading] = useState(true);
-  const [partyData, setpartyData] = useState(null);
-  const [CollectionDatas, setCollectionDatas] = useState([]);
-  useFocusEffect(
-    useCallback(() => {
-      setisLoading(true);
-      setisPartyDataLoading(true);
-      AsyncStorage.getItem('ACC-Book_userData').then(data => {
-        const catchData = data ? JSON.parse(data) : false;
-        if (catchData) {
-          setuserData(catchData);
-          GET_Collection({
-            userid: catchData._id,
-            token: catchData.accessToken,
-            partyId: id,
-          }).then(data => {
-            if (data) {
-              setisLoading(false);
-              setCollectionDatas(data);
-            }
-          });
-          GETINIT_Party({
-            userid: catchData._id,
-            token: catchData.accessToken,
-            id: id,
-          }).then(data => {
-            if (data) {
-              setisPartyDataLoading(false);
-              setpartyData(data);
-            }
-          });
-        } else {
-          navigation.navigate('/Auth');
-        }
-      });
-    }, []),
-  );
+  const {
+    data: CollectionDatas,
+    isLoading: collectionLoading,
+    isFetching: collectionFetching,
+  } = useQuery({
+    queryKey: ['collections', {id}],
+    queryFn: GET_Collection,
+    enabled: !!id,
+  });
+  const {data: partyData, isLoading: partyLoading} = useQuery({
+    queryKey: ['initParty', {id}],
+    queryFn: GETINIT_Party,
+    enabled: !!id,
+  });
+
   const UserCard = ({onClick, data}) => {
     return (
       <View
@@ -142,7 +119,7 @@ export default function Collections({navigation, route}) {
         amount: partyData?.amount,
         data: partyData,
       }}>
-      {isLoading ? (
+      {collectionLoading || collectionFetching ? (
         <FlatList
           data={[1, 2, 3, 4, 5, 6, 7, 8]}
           renderItem={data => {
@@ -171,11 +148,11 @@ export default function Collections({navigation, route}) {
           style={{flex: 1, width: '100%'}}
           contentContainerStyle={{paddingBottom: 15}}
         />
-      ) : CollectionDatas.length > 0 ? (
+      ) : CollectionDatas?.length > 0 ? (
         <ScrollView
           contentContainerStyle={{paddingBottom: 15}}
           style={{flex: 1, width: '100%'}}>
-          {CollectionDatas.map(item => (
+          {CollectionDatas?.map(item => (
             <UserCard
               data={item}
               key={item._id}

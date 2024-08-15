@@ -2,6 +2,9 @@ import React, {useCallback, useEffect} from 'react';
 import TabNavigation from '../Navigation/TabNavigation';
 import {Alert, BackHandler, View} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
+import LinearGradient from 'react-native-linear-gradient';
+import {useGlobalContext} from '../src/utils/customContext';
+import {Text} from 'react-native-paper';
 
 export default function Home({navigation}) {
   useFocusEffect(
@@ -30,5 +33,65 @@ export default function Home({navigation}) {
       headerLeft: () => null,
     });
   }, [navigation]);
-  return <TabNavigation navigation={navigation} />;
+  const {statistics} = useGlobalContext();
+
+  return (
+    <View style={{flex: 1, position: 'relative'}}>
+      <LinearGradient
+        colors={['rgba(0, 0, 0, 0.38)', 'rgba(102, 102, 102, 0.38)']}
+        start={{x: 0, y: 0}}
+        end={{x: 1, y: 0}}
+        style={{
+          width: '98%',
+          height: 90,
+          borderRadius: 20,
+          flexDirection: 'row',
+          alignItems: 'center',
+          position: 'absolute',
+          zIndex: 1,
+          top: 120,
+          left: 3,
+        }}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'space-around',
+            alignItems: 'center',
+            width: '100%',
+            flexDirection: 'column',
+          }}>
+          <Text
+            style={{
+              color: '#BABABA',
+            }}>
+            You will give
+          </Text>
+
+          <Text
+            style={{
+              color: '#41EA66',
+              fontWeight: 'bold',
+              fontSize: 20,
+            }}>
+            ₹ {statistics?.totalcredit || statistics?.amount}
+          </Text>
+        </View>
+
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'space-around',
+            alignItems: 'center',
+            width: '100%',
+            flexDirection: 'column',
+          }}>
+          <Text style={{color: '#BABABA'}}>You will gave</Text>
+          <Text style={{color: '#EA5F41', fontWeight: 'bold', fontSize: 20}}>
+            ₹ {statistics?.totaldebit || statistics?.amount}
+          </Text>
+        </View>
+      </LinearGradient>
+      <TabNavigation navigation={navigation} />
+    </View>
+  );
 }

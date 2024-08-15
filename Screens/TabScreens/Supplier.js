@@ -15,14 +15,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {GET_Statistic} from '../../src/controllers/Statistics';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import {GET_Party} from '../../src/controllers/Party';
+import {useQuery} from '@tanstack/react-query';
+import {useGlobalContext} from '../../src/utils/customContext';
 
 export default function Supplier({navigation}) {
   const {settype} = useContext(GlobalState);
-  const [userData, setuserData] = useState(null);
-  const [Statistics, setStatistics] = useState(null);
-  const [isLoading, setisLoading] = useState(true);
-  const [isPartyLoading, setisPartyLoading] = useState(true);
-  const [partyDatas, setpartyDatas] = useState([]);
+  const {setstatistics} = useGlobalContext();
+
   const UserCard = ({onClick, data}) => {
     return (
       <View
@@ -83,43 +82,37 @@ export default function Supplier({navigation}) {
       </View>
     );
   };
+  const {
+    data: Statistics,
+    isLoading: statisticLoading,
+    isFetching: statisticFetching,
+  } = useQuery({
+    queryKey: ['statistics', {type: 'SUPPLIER'}],
+    queryFn: GET_Statistic,
+  });
+  const {
+    data: partyDatas,
+    isLoading: partyLoading,
+    isFetching: partyFetching,
+  } = useQuery({
+    queryKey: ['parties', {id: Statistics?._id}],
+    queryFn: GET_Party,
+    enabled: Statistics != null,
+  });
+
   useFocusEffect(
     useCallback(() => {
-      setisPartyLoading(true);
       settype('SUPPLIER');
-      AsyncStorage.getItem('ACC-Book_userData').then(data => {
-        const catchData = data ? JSON.parse(data) : false;
-        if (catchData) {
-          setuserData(catchData);
-          GET_Statistic({
-            id: catchData._id,
-            token: catchData.accessToken,
-            type: 'SUPPLIER',
-          }).then(data => {
-            if (data) {
-              setisLoading(false);
-              setStatistics(data);
-              GET_Party({
-                id: catchData._id,
-                token: catchData.accessToken,
-                statisticID: data._id,
-              }).then(party => {
-                if (party) {
-                  setisPartyLoading(false);
-                  setpartyDatas(party);
-                }
-              });
-            }
-          });
-        } else {
-          navigation.navigate('/Auth');
-        }
-      });
+      if (Statistics) {
+        setstatistics(Statistics);
+      }
     }, []),
   );
   return (
-    <PageLayout isLoading={isLoading} data={Statistics}>
-      {isPartyLoading ? (
+    <PageLayout
+      isLoading={statisticLoading || statisticFetching}
+      data={Statistics}>
+      {partyLoading || partyFetching ? (
         <FlatList
           data={[1, 2, 3, 4, 5, 6, 7]}
           renderItem={data => {
@@ -148,7 +141,7 @@ export default function Supplier({navigation}) {
           style={{flex: 1, width: '100%'}}
           contentContainerStyle={{paddingBottom: 65}}
         />
-      ) : partyDatas.length > 0 ? (
+      ) : partyDatas?.length > 0 ? (
         <FlatList
           data={partyDatas}
           renderItem={({item}) => {

@@ -18,6 +18,7 @@
     "@react-navigation/material-top-tabs": "^6.6.13",
     "@react-navigation/native": "^6.1.17",
     "@react-navigation/stack": "^6.3.29",
+    "@tanstack/react-query": "^5.51.23",
     "axios": "^1.7.2",
     "react": "18.2.0",
     "react-native": "0.74.1",

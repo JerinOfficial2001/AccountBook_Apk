@@ -7,6 +7,7 @@ import {useFocusEffect} from '@react-navigation/native';
 import {GlobalState} from '../Navigation';
 import {ADD_Party} from '../src/controllers/Party';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {queryClient} from '../App';
 
 export default function AddParty({navigation, route}) {
   const {type, id} = route.params;
@@ -36,6 +37,8 @@ export default function AddParty({navigation, route}) {
           data: inputDatas,
         }).then(res => {
           if (res?.status == 'ok') {
+            queryClient.invalidateQueries({queryKey: ['statistics']});
+            queryClient.invalidateQueries({queryKey: ['parties']});
             setisLoading(false);
             ToastAndroid.show(res?.message, ToastAndroid.SHORT);
             navigation.goBack();

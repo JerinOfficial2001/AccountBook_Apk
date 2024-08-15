@@ -1,20 +1,30 @@
 import axios from 'axios';
 import {ToastAndroid} from 'react-native';
 import {COLLECTION_API} from '../API';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const GET_Collection = async formDatas => {
-  try {
-    const {data} = await axios.get(
-      `${COLLECTION_API}/get/${formDatas.partyId}?userid=${formDatas.userid}`,
-      {headers: {authorization: `Bearer ${formDatas.token}`}},
-    );
-    if (data.status == 'ok') {
-      return data.data;
-    } else {
-      ToastAndroid.show(data.message, ToastAndroid.SHORT);
+  const cookies = await AsyncStorage.getItem('ACC-Book_userData');
+  const catchData = cookies ? JSON.parse(cookies) : false;
+
+  if (catchData) {
+    try {
+      const {data} = await axios.get(
+        `${COLLECTION_API}/get/${formDatas.queryKey[1].id}?userid=${catchData._id}`,
+        {headers: {authorization: `Bearer ${catchData.accessToken}`}},
+      );
+      if (data.status == 'ok') {
+        return data.data;
+      } else {
+        ToastAndroid.show(data.message, ToastAndroid.SHORT);
+        return [];
+      }
+    } catch (error) {
+      ToastAndroid.show('GET_Collection Err', ToastAndroid.SHORT);
     }
-  } catch (error) {
-    ToastAndroid.show('GET_Collection Err', ToastAndroid.SHORT);
+  } else {
+    ToastAndroid.show('Un-authorized', ToastAndroid.SHORT);
+    return [];
   }
 };
 export const GETINIT_Collection = async formDatas => {
